@@ -1,12 +1,6 @@
 version: '3'
 services:
-  dkron:
-    image: dkron/dkron:latest
-    ports:
-      - "8089:8080"
-    volumes:
-      - ./dkron-data:/dkron.data
-    command: agent --server --bootstrap-expect=1 --node-name=node1
+
 
   postgres:
     image: postgres:15
