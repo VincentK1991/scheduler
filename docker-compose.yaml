@@ -1,0 +1,20 @@
+version: '3'
+services:
+  dkron:
+    image: dkron/dkron:latest
+    ports:
+      - "8089:8080"
+    volumes:
+      - ./dkron-data:/dkron.data
+    command: agent --server --bootstrap-expect=1 --node-name=node1
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: scheduler
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data

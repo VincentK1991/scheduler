@@ -1,0 +1,9 @@
+postgres-data/
+dkron-data/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+venv/
+.venv/
+.pytest_cache/
