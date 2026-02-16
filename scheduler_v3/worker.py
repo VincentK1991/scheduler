@@ -4,6 +4,11 @@ from temporalio.worker import Worker
 
 from .activities import print_activity
 from .workflows import PrintWorkflow
+from .saga_activities import (
+    activity_a, activity_b, activity_c,
+    compensate_a, compensate_b, compensate_c
+)
+from .saga_workflow import SagaWorkflow
 
 async def main():
     client = await Client.connect("localhost:7233")
@@ -11,8 +16,12 @@ async def main():
     worker = Worker(
         client,
         task_queue="scheduler-v3-task-queue",
-        workflows=[PrintWorkflow],
-        activities=[print_activity],
+        workflows=[PrintWorkflow, SagaWorkflow],
+        activities=[
+            print_activity,
+            activity_a, activity_b, activity_c,
+            compensate_a, compensate_b, compensate_c
+        ],
     )
     
     print("Worker started. Press Ctrl+C to stop.")

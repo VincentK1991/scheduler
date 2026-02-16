@@ -9,8 +9,9 @@ from temporalio.service import RPCError
 
 from .database import get_db
 from .models import Schedule as ScheduleModel
-from .schemas import ScheduleCreate, ScheduleUpdate, ScheduleData, ScheduleList
+from .schemas import ScheduleCreate, ScheduleUpdate, ScheduleData, ScheduleList, SagaPayload
 from .workflows import PrintWorkflow
+from .saga_workflow import SagaWorkflow
 
 # Global Temporal Client
 temporal_client: Optional[Client] = None
@@ -62,6 +63,8 @@ async def create_schedule(
     if not temporal_client:
         raise HTTPException(500, "Temporal client not connected")
 
+    print(f"DEBUG: Received schedule: {schedule.model_dump()}")
+
     # Save to local DB first
     db_schedule = ScheduleModel(
         user_id=user_id,
@@ -78,14 +81,25 @@ async def create_schedule(
     schedule_id = str(db_schedule.id)
     spec = _get_schedule_spec(schedule.cron_expression)
 
+    workflow_to_run = PrintWorkflow.run
+    workflow_args = []
+    
+    if schedule.workflow_type == "saga":
+        workflow_to_run = SagaWorkflow.run
+        # Use provided saga_payload or default
+        payload = schedule.saga_payload or SagaPayload()
+        workflow_args = [payload]
+    else:
+        # Default to PrintWorkflow
+        workflow_args = [f"Schedule {schedule_id} triggered! Payload: {schedule.webhook_payload}"]
+
     try:
         await temporal_client.create_schedule(
             schedule_id,
             Schedule(
                 action=ScheduleActionStartWorkflow(
-                    PrintWorkflow.run,
-                    # We pass the webhook payload as the message to print
-                    args=[f"Schedule {schedule_id} triggered! Payload: {schedule.webhook_payload}"],
+                    workflow_to_run,
+                    args=workflow_args,
                     id=f"workflow-{schedule_id}",
                     task_queue="scheduler-v3-task-queue",
                 ),

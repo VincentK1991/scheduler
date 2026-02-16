@@ -15,7 +15,8 @@ dependencies = [
     "sqlalchemy",
     "psycopg2-binary",
     "croniter",
-    "temporalio"
+    "temporalio",
+    "returns>=0.26.0",
 ]
 
 [build-system]
