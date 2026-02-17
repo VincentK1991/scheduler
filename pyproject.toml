@@ -14,7 +14,9 @@ dependencies = [
     "apscheduler",
     "sqlalchemy",
     "psycopg2-binary",
-    "croniter"
+    "croniter",
+    "temporalio",
+    "returns>=0.26.0",
 ]
 
 [build-system]
